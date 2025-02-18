@@ -1,5 +1,5 @@
 import { Role } from "src/roles/roles.entity";
-import { Column, Entity, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryColumn } from "typeorm";
 import { RoomState } from "./enums/roomState.enum";
 
 @Entity()
