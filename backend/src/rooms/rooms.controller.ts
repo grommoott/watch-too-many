@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from "@nestjs/common"
+import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common"
 import { AuthGuard } from "src/tokens/auth.guard"
 import { IRoom } from "./interfaces/room.interface"
 import { CreateRoomDto } from "./dto/createRoom.dto"
@@ -19,5 +19,14 @@ export class RoomsController {
     @Get("list")
     async list(@Body("user") user: User): Promise<IRoom[]> {
         return await this.roomsService.getRooms(user)
+    }
+
+    @UseGuards(AuthGuard)
+    @Get(":name")
+    async get(
+        @Body("user") user: User,
+        @Param("name") name: string,
+    ): Promise<IRoom> {
+        return await this.roomsService.getRoom(user, name)
     }
 }

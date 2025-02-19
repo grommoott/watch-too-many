@@ -2,6 +2,7 @@ import {
     ForbiddenException,
     Injectable,
     InternalServerErrorException,
+    NotFoundException,
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Room } from "./rooms.entity"
@@ -72,5 +73,19 @@ export class RoomsService {
             relations: this.relationsIRoom,
             select: this.selectorIRoom,
         })
+    }
+
+    async getRoom(user: User, name: string): Promise<IRoom> {
+        const room = await this.roomsRepository.findOne({
+            where: { name, roles: { user } },
+            relations: this.relationsIRoom,
+            select: this.selectorIRoom,
+        })
+
+        if (room == null) {
+            throw new NotFoundException()
+        }
+
+        return room
     }
 }
