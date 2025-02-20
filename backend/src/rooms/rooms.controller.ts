@@ -1,9 +1,18 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common"
+import {
+    Body,
+    Controller,
+    Get,
+    Param,
+    Post,
+    Put,
+    UseGuards,
+} from "@nestjs/common"
 import { AuthGuard } from "src/tokens/auth.guard"
 import { IRoom } from "./interfaces/room.interface"
 import { CreateRoomDto } from "./dto/createRoom.dto"
 import { RoomsService } from "./rooms.service"
 import { User } from "src/users/users.entity"
+import { JoinRoomDto } from "./dto/joinRoomDto"
 
 @Controller("rooms")
 export class RoomsController {
@@ -28,5 +37,11 @@ export class RoomsController {
         @Param("name") name: string,
     ): Promise<IRoom> {
         return await this.roomsService.getRoom(user, name)
+    }
+
+    @UseGuards(AuthGuard)
+    @Put("join")
+    async join(@Body() joinRoomDto: JoinRoomDto) {
+        return await this.roomsService.join(joinRoomDto)
     }
 }

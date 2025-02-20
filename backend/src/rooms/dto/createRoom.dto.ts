@@ -1,5 +1,5 @@
-import { IsString, Length } from "class-validator";
-import { RoomInteractionDto } from "./roomInteraction.dto";
+import { IsString, Length } from "class-validator"
+import { RoomInteractionDto } from "./roomInteraction.dto"
 
 export class CreateRoomDto extends RoomInteractionDto {
     @IsString()
