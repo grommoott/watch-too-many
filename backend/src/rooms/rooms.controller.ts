@@ -13,6 +13,7 @@ import { CreateRoomDto } from "./dto/createRoom.dto"
 import { RoomsService } from "./rooms.service"
 import { User } from "src/users/users.entity"
 import { JoinRoomDto } from "./dto/joinRoomDto"
+import { LeaveRoomDto } from "./dto/leaveRoomDto"
 
 @Controller("rooms")
 export class RoomsController {
@@ -43,5 +44,11 @@ export class RoomsController {
     @Put("join")
     async join(@Body() joinRoomDto: JoinRoomDto) {
         return await this.roomsService.join(joinRoomDto)
+    }
+
+    @UseGuards(AuthGuard)
+    @Put("leave")
+    async leave(@Body() leaveRoomDto: LeaveRoomDto) {
+        await this.roomsService.leave(leaveRoomDto)
     }
 }

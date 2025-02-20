@@ -16,6 +16,7 @@ import { Roles } from "src/roles/enums/role.enum"
 import { RoomStates } from "./enums/roomState.enum"
 import { User } from "src/users/users.entity"
 import { JoinRoomDto } from "./dto/joinRoomDto"
+import { LeaveRoomDto } from "./dto/leaveRoomDto"
 
 @Injectable()
 export class RoomsService {
@@ -114,8 +115,9 @@ export class RoomsService {
     }
 
     async join(joinRoomDto: JoinRoomDto) {
-        const room = await this.roomsRepository.findOneBy({
-            name: joinRoomDto.name,
+        const room = await this.roomsRepository.findOne({
+            where: { name: joinRoomDto.name },
+            relations: { roles: true },
         })
 
         if (room == null) {
@@ -133,6 +135,38 @@ export class RoomsService {
         role.user = joinRoomDto.user
         role.room = room
 
+        if (room.roles.length == 0) {
+            role.role = Roles.Admin
+        }
+
         await this.rolesRepository.save(role)
+    }
+
+    async leave(leaveRoomDto: LeaveRoomDto) {
+        const role = await this.rolesRepository.findOne({
+            where: {
+                room: { name: leaveRoomDto.name },
+                user: leaveRoomDto.user,
+            },
+        })
+
+        if (role == null) {
+            throw new NotFoundException()
+        }
+
+        await this.rolesRepository.remove([role])
+
+        const randomRole = await this.rolesRepository.findOne({
+            where: {
+                room: { name: leaveRoomDto.name },
+            },
+        })
+
+        if (randomRole == null) {
+            return
+        }
+
+        randomRole.role = Roles.Admin
+        this.rolesRepository.save(randomRole)
     }
 }
