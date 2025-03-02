@@ -1,4 +1,5 @@
 import {
+    ConflictException,
     ForbiddenException,
     Injectable,
     InternalServerErrorException,
@@ -17,6 +18,7 @@ import { RoomStates } from "./enums/roomState.enum"
 import { User } from "src/users/users.entity"
 import { JoinRoomDto } from "./dto/joinRoomDto"
 import { LeaveRoomDto } from "./dto/leaveRoomDto"
+import { EditRoomDto } from "./dto/editRoomDto"
 
 @Injectable()
 export class RoomsService {
@@ -117,7 +119,7 @@ export class RoomsService {
     async join(joinRoomDto: JoinRoomDto) {
         const room = await this.roomsRepository.findOne({
             where: { name: joinRoomDto.name },
-            relations: { roles: true },
+            relations: { roles: { user: true } },
         })
 
         if (room == null) {
@@ -125,9 +127,20 @@ export class RoomsService {
         }
 
         if (
-            !this.hashService.compare(joinRoomDto.password, room.passwordHash)
+            !(await this.hashService.compare(
+                joinRoomDto.password,
+                room.passwordHash,
+            ))
         ) {
             throw new ForbiddenException()
+        }
+
+        if (
+            room.roles.findIndex(
+                (role) => role.user.name == joinRoomDto.user.name,
+            ) != -1
+        ) {
+            throw new ConflictException()
         }
 
         const role = new Role()
@@ -156,6 +169,20 @@ export class RoomsService {
 
         await this.rolesRepository.remove([role])
 
+        if (role.role != Roles.Admin) {
+            return
+        }
+
+        const adminRoles = await this.rolesRepository.find({
+            where: {
+                room: { name: leaveRoomDto.name },
+            },
+        })
+
+        if (adminRoles.length != 0) {
+            return
+        }
+
         const randomRole = await this.rolesRepository.findOne({
             where: {
                 room: { name: leaveRoomDto.name },
@@ -168,5 +195,86 @@ export class RoomsService {
 
         randomRole.role = Roles.Admin
         this.rolesRepository.save(randomRole)
+    }
+
+    async edit(editRoomDto: EditRoomDto) {
+        const adminRole = await this.rolesRepository.findOne({
+            where: {
+                room: { name: editRoomDto.name },
+                role: Roles.Admin,
+                user: editRoomDto.user,
+            },
+        })
+
+        if (!adminRole) {
+            throw new ForbiddenException()
+        }
+
+        const room = await this.roomsRepository.findOne({
+            where: {
+                name: editRoomDto.name,
+            },
+            relations: {
+                roles: { user: true },
+            },
+        })
+
+        if (!room) {
+            throw new NotFoundException()
+        }
+
+        const passwordHash = await (() => {
+            if (editRoomDto.newPassword) {
+                return this.hashService.hash(editRoomDto.newPassword)
+            }
+        })()
+
+        const roles = await (async () => {
+            if (!editRoomDto.newRoles) {
+                return
+            }
+
+            const roles = await this.rolesRepository.remove(room.roles)
+            const newRoles: Role[] = []
+
+            try {
+                const rolePromises = editRoomDto.newRoles
+                    .filter(
+                        (newRole) =>
+                            room.roles.findIndex(
+                                (role) => role.user.name == newRole.user.name,
+                            ) != -1,
+                    )
+                    .map((val) => {
+                        const role = new Role()
+                        role.user = new User()
+                        role.user.name = val.user.name
+                        role.role = val.role
+                        role.room = room
+
+                        return this.rolesRepository.save(role)
+                    })
+
+                await Promise.all(rolePromises)
+
+                for (const promise of rolePromises) {
+                    newRoles.push(await promise)
+                }
+            } catch (e) {
+                this.rolesRepository.save(roles)
+                throw e
+            }
+
+            return newRoles
+        })()
+
+        room.passwordHash = passwordHash || room.passwordHash
+        room.roles = roles || room.roles
+
+        await this.roomsRepository.save(room)
+        await this.roomsRepository.update(
+            { name: room.name },
+            { name: editRoomDto.newName || room.name },
+        )
     }
 }

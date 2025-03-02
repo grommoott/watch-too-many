@@ -7,13 +7,14 @@ import {
     Put,
     UseGuards,
 } from "@nestjs/common"
-import { AuthGuard } from "src/tokens/auth.guard"
+import { AuthGuard } from "src/tokens/guards"
 import { IRoom } from "./interfaces/room.interface"
 import { CreateRoomDto } from "./dto/createRoom.dto"
 import { RoomsService } from "./rooms.service"
 import { User } from "src/users/users.entity"
 import { JoinRoomDto } from "./dto/joinRoomDto"
 import { LeaveRoomDto } from "./dto/leaveRoomDto"
+import { EditRoomDto } from "./dto/editRoomDto"
 
 @Controller("rooms")
 export class RoomsController {
@@ -50,5 +51,11 @@ export class RoomsController {
     @Put("leave")
     async leave(@Body() leaveRoomDto: LeaveRoomDto) {
         await this.roomsService.leave(leaveRoomDto)
+    }
+
+    @UseGuards(AuthGuard)
+    @Put()
+    async edit(@Body() editRoomDto: EditRoomDto) {
+        await this.roomsService.edit(editRoomDto)
     }
 }
