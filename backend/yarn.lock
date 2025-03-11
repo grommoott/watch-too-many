@@ -1049,6 +1049,14 @@
     socket.io "4.8.1"
     tslib "2.8.1"
 
+"@nestjs/platform-ws@^11.0.11":
+  version "11.0.11"
+  resolved "https://registry.yarnpkg.com/@nestjs/platform-ws/-/platform-ws-11.0.11.tgz#ba762f78d998f7da87775ba154a503449b69b890"
+  integrity sha512-aIQCEJVHwlRwJPczFShsWEJq7w+VqyAFe1EjG8oxSihJ7sPqT+1jOLgqXabZSAKZNl2sF4++NtxwGZG++5/hlQ==
+  dependencies:
+    tslib "2.8.1"
+    ws "8.18.1"
+
 "@nestjs/schematics@11.0.0", "@nestjs/schematics@^11.0.0":
   version "11.0.0"
   resolved "https://registry.yarnpkg.com/@nestjs/schematics/-/schematics-11.0.0.tgz#8e02e86d6515e57eac72923ebae330f57c0ae390"
@@ -5914,7 +5922,7 @@ socket.io-parser@~4.2.4:
     "@socket.io/component-emitter" "~3.1.0"
     debug "~4.3.1"
 
-socket.io@4.8.1:
+socket.io@4.8.1, socket.io@^4.8.1:
   version "4.8.1"
   resolved "https://registry.yarnpkg.com/socket.io/-/socket.io-4.8.1.tgz#fa0eaff965cc97fdf4245e8d4794618459f7558a"
   integrity sha512-oZ7iUCxph8WYRHHcjBEc9unw3adt5CmSNlppj/5Q4k2RIrhl8Z5yY2Xr4j9zj0+wzVZ0bxmYoGSzKJnRl6A4yg==
@@ -6727,6 +6735,11 @@ write-file-atomic@^4.0.2:
   dependencies:
     imurmurhash "^0.1.4"
     signal-exit "^3.0.7"
+
+ws@8.18.1:
+  version "8.18.1"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.1.tgz#ea131d3784e1dfdff91adb0a4a116b127515e3cb"
+  integrity sha512-RKW2aJZMXeMxVpnZ6bck+RswznaxmzdULiBr6KY7XkTnW8uvt0iT9H5DkHUChXrc+uurzwa0rVI16n/Xzjdz1w==
 
 ws@~8.17.1:
   version "8.17.1"
